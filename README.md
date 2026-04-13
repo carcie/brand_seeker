@@ -105,7 +105,7 @@ def verify_provenance(company_name, target_brand):
 {
   "lead_metadata": {
     "brand": "Vuori",
-    "vendor": "Empresa Puenta LLC",
+    "vendor": "Empresa Pulenta LLC",
     "source_url": "https://sitiodepalletsoropadelujo.com/vuori-lot-99"
   },
   "trust_score": {
@@ -128,7 +128,6 @@ def verify_warehouse_location(address):
     res = gmaps.geocode(address)
     if res:
         location_type = res[0]['types']
-        # este es un ejemplo de como identificar redflags
         red_flags = ['residential', 'subpremise', 'postal_code']
         return not any(flag in location_type for flag in red_flags)
     return False
