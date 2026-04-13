@@ -66,66 +66,6 @@ def check_domain_trust(domain):
 
 ```
 
-## 2. Arquitectura del Sistema
-La arquitectura del pipeline se compone de cuatro microservicios modulares:
- 1. **Servicio de Ingesta (Descubrimiento):** Realiza búsquedas (scraping) y consultas periódicas a APIs de mercados en busca de inventario específico.
- 2. **Servicio de Auditoría (Validación):** Verifica programáticamente la antigüedad del dominio, el registro empresarial y la ubicación física de los almacenes.
- 3. **Servicio de Procedencia (Cadena de Suministro):** Contrasta la fuente con registros de comercio global y conocimientos de embarque (Bill of Lading - BOL) para verificar el flujo real de inventario.
- 4. **Servicio de Normalización (Entrega):** Estandariza los datos en un esquema JSON para su posterior análisis financiero.
-## 3. Fase 1: Servicio de Ingesta (Descubrimiento)
-**Objetivo:** Monitoreo programático de plataformas de liquidación de Nivel 1 (Tier 1) y puntos de venta de excedentes de tiendas departamentales.
-**Enfoque Técnico:**
- * **Endpoints Objetivo:** B-Stock, Direct Liquidation, 888 Lots y liquidadores especializados en marcas premium.
- * **Infraestructura:** Trabajadores de Python programados (Celery/Redis) utilizando Playwright para renderizado de DOM dinámico o BeautifulSoup para análisis estático.
-
-   
-```python
-import requests
-from bs4 import BeautifulSoup
-import time
-
-TARGET_BRANDS = ["Lululemon", "Vuori", "Alo", "Pangaia", "Ryder", "OC"]
-
-def poll_listings(base_url):
-    headers = {'User-Agent': 'Mozilla/5.0 (Apparel-Sourcing-Bot/1.0)'}
-    try:
-        response = requests.get(base_url, headers=headers, timeout=10)
-        soup = BeautifulSoup(response.text, 'html.parser')
-        listings = soup.find_all('div', class_='auction-card')
-        
-        results = []
-        for item in listings:
-            title = item.find('h2').text
-            if any(brand.lower() in title.lower() for brand in TARGET_BRANDS):
-                results.append({
-                    "title": title,
-                    "source_url": item.find('a')['href'],
-                    "scraped_at": time.time()
-                })
-        return results
-    except Exception as e:
-        print(f"Error de Ingesta: {e}")
-        return []
-
-```
-## 4. Fase 2: Servicio de Auditoría (Verificación)
-**Objetivo:** Mitigación automatizada de riesgos para filtrar operaciones fraudulentas mediante análisis de metadatos y geoespacial.
-### A. Auditoría de Integridad del Dominio
-Verifica que el dominio tenga un historial suficiente y no sea un sitio temporal creado para estafas.
-```python
-import whois
-from datetime import datetime
-
-def check_domain_trust(domain):
-    try:
-        w = whois.whois(domain)
-        creation_date = w.creation_date[0] if isinstance(w.creation_date, list) else w.creation_date
-        age_days = (datetime.now() - creation_date).days
-        return age_days > 365 # Umbral: 1 año
-    except:
-        return False
-
-```
 ### B. Auditoría Geoespacial de Almacenes
 Utiliza la API de Google Maps para confirmar que la dirección del proveedor corresponde a una zona industrial/comercial y no a una residencia u oficina virtual.
 ```python
