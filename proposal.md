@@ -1,7 +1,8 @@
 # Pipeline de Localización, Verificación y Monitoreo de Cadena de Suministro
 ## 1. Intro
 El objetivo de este sistema es reemplazar la búsqueda manual con un pipeline ETL (Extraer, Transformar, Cargar) programático. El sistema identifica lotes de ropa al por mayor (específicamente de las marcas **Alo, Lululemon, OC, Ryder, Vuori y Pangaia**), audita la legitimidad de la fuente mediante una verificación de múltiples factores y valida el historial físico de la cadena de suministro a través de datos de comercio internacional.
-El resultado final es un conjunto de datos estructurado y de alta integridad, listo para el modelado de viabilidad financiera.
+El resultado final es un conjunto de datos estructurado y de alta integridad, listo para el modelado de viabilidad financiera (opcional).
+
 ## 2. Arquitectura del Sistema
 La arquitectura del pipeline se compone de cuatro microservicios modulares:
  1. **Servicio de Ingesta (Descubrimiento):** Realiza búsquedas (scraping) y consultas periódicas a APIs de mercados en busca de inventario específico.
@@ -11,8 +12,10 @@ La arquitectura del pipeline se compone de cuatro microservicios modulares:
 ## 3. Fase 1: Servicio de Ingesta (Descubrimiento)
 **Objetivo:** Monitoreo programático de plataformas de liquidación de Nivel 1 (Tier 1) y puntos de venta de excedentes de tiendas departamentales.
 **Enfoque Técnico:**
- * **Endpoints Objetivo:** B-Stock, Direct Liquidation, 888 Lots, DNC Wholesale BrandsGateway, BrandsDistribution, Styliafoe y otros liquidadores especializados en marcas premium.
+ * **Endpoints Objetivo:** B-Stock, Direct Liquidation, 888 Lots, DNC Wholesale, BrandsGateway, BrandsDistribution, Styliafoe y otros liquidadores especializados en marcas premium.
  * **Infraestructura:** Python workers programados (Celery/Redis) utilizando Playwright para renderizado de DOM dinámico, BeautifulSoup para análisis estático o servicios pagados como Octoparse.
+
+
 ```python
 import requests
 from bs4 import BeautifulSoup
@@ -46,6 +49,8 @@ def poll_listings(base_url):
 **Objetivo:** Mitigación automatizada de riesgos para filtrar operaciones fraudulentas mediante análisis de metadatos y geoespacial.
 ### A. Auditoría de Integridad del Dominio
 Verifica que el dominio tenga un historial suficiente y no sea un sitio temporal creado para estafas.
+
+
 ```python
 import whois
 from datetime import datetime
@@ -60,15 +65,7 @@ def check_domain_trust(domain):
         return False
 
 ```
-### B. Auditoría Geoespacial de Almacenes
-Utiliza la API de Google Maps para confirmar que la dirección del proveedor corresponde a una zona industrial/comercial y no a una residencia u oficina virtual.
-```python
-import googlemaps
 
-gmaps = googlemaps.Client(key='YOUR_API_KEY')# Especificación Técnica: Pipeline Automatizado de Abastecimiento, Verificación y Monitoreo de Cadena de Suministro (v1.2)
-## 1. Resumen Ejecutivo
-El objetivo de este sistema es reemplazar la búsqueda manual con un pipeline ETL (Extraer, Transformar, Cargar) programático. El sistema identifica lotes de ropa al por mayor (específicamente de las marcas **Alo, Lululemon, OC, Ryder, Vuori y Pangaia**), audita la legitimidad de la fuente mediante una verificación de múltiples factores y valida el historial físico de la cadena de suministro a través de datos de comercio internacional.
-El resultado final es un conjunto de datos estructurado y de alta integridad, listo para el modelado de viabilidad financiera.
 ## 2. Arquitectura del Sistema
 La arquitectura del pipeline se compone de cuatro microservicios modulares:
  1. **Servicio de Ingesta (Descubrimiento):** Realiza búsquedas (scraping) y consultas periódicas a APIs de mercados en busca de inventario específico.
@@ -80,6 +77,8 @@ La arquitectura del pipeline se compone de cuatro microservicios modulares:
 **Enfoque Técnico:**
  * **Endpoints Objetivo:** B-Stock, Direct Liquidation, 888 Lots y liquidadores especializados en marcas premium.
  * **Infraestructura:** Trabajadores de Python programados (Celery/Redis) utilizando Playwright para renderizado de DOM dinámico o BeautifulSoup para análisis estático.
+
+   
 ```python
 import requests
 from bs4 import BeautifulSoup
@@ -109,7 +108,7 @@ def poll_listings(base_url):
         return []
 
 ```
-## 4. Fase 2: Servicio de Auditoría (Verificación de Confianza)
+## 4. Fase 2: Servicio de Auditoría (Verificación)
 **Objetivo:** Mitigación automatizada de riesgos para filtrar operaciones fraudulentas mediante análisis de metadatos y geoespacial.
 ### A. Auditoría de Integridad del Dominio
 Verifica que el dominio tenga un historial suficiente y no sea un sitio temporal creado para estafas.
@@ -148,7 +147,7 @@ def verify_warehouse_location(address):
 **Objetivo:** Confirmar que el vendedor es un consignatario documentado de las marcas objetivo a través de datos aduaneros.
 **Enfoque Técnico:**
  * **Fuente de Datos:** Integración con APIs de inteligencia comercial (ej. Panjiva, ImportYeti o Vizion).
- * **Lógica de Validación:** Comparar el "Consignatario" (el liquidador) con el "Expedidor" (ej. Lululemon Athletica Canada) para encontrar registros de conocimientos de embarque (BOL) coincidentes en los últimos 12 a 24 meses.
+ * **Lógica de Validación:** Comparar el "Consignatario" (vendedor) con el "fabricante" (ej. Lululemon Athletica Canada) para encontrar registros de BLs coincidentes en los últimos 12 a 24 meses.
 ```python
 def verify_provenance(company_name, target_brand):
     # Simulación de llamada a una API de Comercio Global
@@ -167,7 +166,7 @@ def verify_provenance(company_name, target_brand):
 {
   "lead_metadata": {
     "brand": "Vuori",
-    "vendor": "Premium Assets LLC",
+    "vendor": "Empresa Puenta LLC",
     "source_url": "https://sitiodepalletsoropadelujo.com/vuori-lot-99"
   },
   "trust_score": {
@@ -197,46 +196,3 @@ def verify_warehouse_location(address):
 
 ```
 
-## 5. Fase 3: Servicio de Procedencia (Monitoreo de Cadena de Suministro)
-**Objetivo:** Confirmar que el vendedor es un consignatario documentado de las marcas objetivo a través de datos aduaneros.
-**Enfoque Técnico:**
- * **Fuente de Datos:** Integración con APIs de inteligencia comercial (ej. Panjiva, ImportYeti o Vizion).
- * **Lógica de Validación:** Comparar el "Consignatario" (el liquidador) con el "Expedidor" (ej. Lululemon Athletica Canada) para encontrar registros de conocimientos de embarque (BOL) coincidentes en los últimos 12 a 24 meses.
-```python
-def verify_provenance(company_name, target_brand):
-    # Simulación de llamada a una API de Comercio Global
-    api_url = f"https://api.trademonitor.com/v1/shipments?consignee={company_name}"
-    response = requests.get(api_url, auth=('user', 'pass'))
-    shipments = response.json().get('data', [])
-    
-    # Verificar menciones directas de la marca en descripciones o nombres de expedidores
-    matches = [s for s in shipments if target_brand.lower() in str(s).lower()]
-    return len(matches) > 0, {"match_count": len(matches)}
-
-```
-## 6. Fase 4: Normalización (Esquema de Entrega)
-**Objetivo:** Generar el objeto final para el equipo de Viabilidad Financiera.
-**Ejemplo de Carga Útil (Payload) JSON:**
-```json
-{
-  "lead_metadata": {
-    "brand": "Vuori",
-    "vendor": "Premium Assets LLC",
-    "source_url": "https://liquidator-portal.com/vuori-lot-99"
-  },
-  "trust_score": {
-    "domain_age_days": 840,
-    "location_verified": true,
-    "location_class": "Industrial Warehouse",
-    "is_scam_likely": false
-  },
-  "supply_chain_verification": {
-    "provenance_status": "VERIFIED",
-    "last_shipment_date": "2026-02-10",
-    "verified_shipper": "VUORI INC / ASIA LOGISTICS",
-    "annual_volume_kg": 12500
-  },
-  "analysis_ready": true
-}
-
-```
