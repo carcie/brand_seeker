@@ -137,7 +137,6 @@ def verify_warehouse_location(address):
     res = gmaps.geocode(address)
     if res:
         location_type = res[0]['types']
-        # Identificar banderas rojas residenciales o no industriales
         red_flags = ['residential', 'subpremise', 'postal_code']
         return not any(flag in location_type for flag in red_flags)
     return False
@@ -150,7 +149,7 @@ def verify_warehouse_location(address):
  * **Lógica de Validación:** Comparar el "Consignatario" (vendedor) con el "fabricante" (ej. Lululemon Athletica Canada) para encontrar registros de BLs coincidentes en los últimos 12 a 24 meses.
 ```python
 def verify_provenance(company_name, target_brand):
-    # Simulación de llamada a una API de Comercio Global
+    # Simulación de API call
     api_url = f"https://api.trademonitor.com/v1/shipments?consignee={company_name}"
     response = requests.get(api_url, auth=('user', 'pass'))
     shipments = response.json().get('data', [])
