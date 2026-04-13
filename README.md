@@ -99,8 +99,8 @@ def verify_provenance(company_name, target_brand):
 
 ```
 ## 6. Fase 4: Normalización (Esquema de Entrega)
-**Objetivo:** Generar el objeto final para el equipo de Viabilidad Financiera.
-**Ejemplo de Carga Útil (Payload) JSON:**
+**Objetivo:** Generar el objeto final para el analísis de Viabilidad Financiera.
+**Ejemplo de ayload JSON:**
 ```json
 {
   "lead_metadata": {
@@ -122,15 +122,6 @@ def verify_provenance(company_name, target_brand):
   },
   "analysis_ready": true
 }
-
-
-def verify_warehouse_location(address):
-    res = gmaps.geocode(address)
-    if res:
-        location_type = res[0]['types']
-        red_flags = ['residential', 'subpremise', 'postal_code']
-        return not any(flag in location_type for flag in red_flags)
-    return False
 
 ```
 
