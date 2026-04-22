@@ -8,8 +8,8 @@ Este informe detalla una metodología técnica de múltiples etapas utilizada pa
 
 Se implementó una herramienta propietaria basada en una API de Go y CLI para extraer datos de las páginas de resultados de motores de búsqueda (SERP) en cinco índices globales: Google, Yandex, Baidu, Bing y DuckDuckGo.
 
-- **Parámetros:** Se utilizaron diversas cadenas de búsqueda (ej. "strategic sales", "dealer application", "B2B portal") y ventanas de fechas específicas para identificar canales profesionales persistentes.
-- **Repositorio Inicial de Datos:** Los resultados en formato JSON se consolidaron mediante Python (utilizando una lógica de concatenación/fusión) para identificar solapamientos y dominios oficiales de alto ranking.
+- **Parámetros:** Se utilizaron diversas cadenas de búsqueda (ej. "pallets", "wholesale","strategic sales", "dealers", "distributors", "B2B portal", "-facebook", "-pinterest", "-alibaba") y ventanas de fechas específicas para identificar canales profesionales persistentes.
+- **Repositorio Inicial de Datos:** Los resultados en formato JSON se consolidaron usando Python 3.11 (utilizando una lógica concat/merge) para identificar overlaps y dominios oficiales de alto ranking.
 
 ### Fase II: Auditoría de Dominios y Seguridad
 
