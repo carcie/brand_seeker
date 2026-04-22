@@ -1,127 +1,44 @@
-# Pipeline de Localización, Verificación y Monitoreo de Cadena de Suministro
-## 1. Intro
-El objetivo de este sistema es reemplazar la búsqueda manual con un pipeline ETL (Extraer, Transformar, Cargar) programático. El sistema identifica lotes de ropa al por mayor (específicamente de las marcas **Alo, Lululemon, OC, Ryder, Vuori y Pangaia**), audita la legitimidad de la fuente mediante una verificación de múltiples factores y valida el historial físico de la cadena de suministro a través de datos de comercio internacional.
-El resultado final es un conjunto de datos estructurado y de alta integridad, listo para el modelado de viabilidad financiera (opcional).
+# Intro
 
-## 2. Arquitectura del Sistema
-La arquitectura del pipeline se compone de cuatro microservicios modulares:
- 1. **Servicio de Ingesta (Descubrimiento):** Realiza búsquedas (scraping) y consultas periódicas a APIs de mercados en busca de inventario específico.
- 2. **Servicio de Auditoría (Validación):** Verifica programáticamente la antigüedad del dominio, el registro empresarial y la ubicación física de los almacenes.
- 3. **Servicio de Procedencia (Cadena de Suministro):** Contrasta la fuente con registros de comercio global y conocimientos de embarque (Bill of Lading - BOL) para verificar el flujo real de inventario.
- 4. **Servicio de Normalización (Entrega):** Estandariza los datos en un esquema JSON para su posterior análisis financiero.
-## 3. Fase 1: Servicio de Ingesta (Descubrimiento)
-**Objetivo:** Monitoreo programático de plataformas de liquidación de Nivel 1 (Tier 1) y puntos de venta de excedentes de tiendas departamentales.
-**Enfoque Técnico:**
- * **Endpoints Objetivo:** B-Stock, Direct Liquidation, 888 Lots, DNC Wholesale, BrandsGateway, BrandsDistribution, Styliafoe y otros liquidadores especializados en marcas premium.
- * **Infraestructura:** Python workers programados (Celery/Redis) utilizando Playwright para renderizado de DOM dinámico, BeautifulSoup para análisis estático o servicios pagados como Octoparse.
+Este informe detalla una metodología técnica de múltiples etapas utilizada para filtrar la viabilidad mayorista de marcas de ropa de alta demanda. El objetivo principal fue distinguir la infraestructura B2B oficial y segura de los entornos de reventa no autorizados o de alto riesgo. A través de la extracción automatizada de SERP, verificación de dominios y auditoría de pasarelas de pago, se han identificado cuatro marcas principales —Lululemon, Vuori, Ryderwear y Pangaia— con marcos de asociación profesional viables.
 
+## Metodología Técnica
 
-```python
-import requests
-from bs4 import BeautifulSoup
-import time
+### Fase I: Extracción Automatizada Multimotor
 
-TARGET_BRANDS = ["Lululemon", "Vuori", "Alo", "Pangaia", "Ryder", "OC"]
+Se implementó una herramienta propietaria basada en una API de Go y CLI para extraer datos de las páginas de resultados de motores de búsqueda (SERP) en cinco índices globales: Google, Yandex, Baidu, Bing y DuckDuckGo.
 
-def poll_listings(base_url):
-    headers = {'User-Agent': 'Mozilla/5.0 (Apparel-Sourcing-Bot/1.0)'}
-    try:
-        response = requests.get(base_url, headers=headers, timeout=10)
-        soup = BeautifulSoup(response.text, 'html.parser')
-        listings = soup.find_all('div', class_='auction-card')
-        
-        results = []
-        for item in listings:
-            title = item.find('h2').text
-            if any(brand.lower() in title.lower() for brand in TARGET_BRANDS):
-                results.append({
-                    "title": title,
-                    "source_url": item.find('a')['href'],
-                    "scraped_at": time.time()
-                })
-        return results
-    except Exception as e:
-        print(f"Error de Ingesta: {e}")
-        return []
+- **Parámetros:** Se utilizaron diversas cadenas de búsqueda (ej. "strategic sales", "dealer application", "B2B portal") y ventanas de fechas específicas para identificar canales profesionales persistentes.
+- **Repositorio Inicial de Datos:** Los resultados en formato JSON se consolidaron mediante Python (utilizando una lógica de concatenación/fusión) para identificar solapamientos y dominios oficiales de alto ranking.
 
-```
-## 4. Fase 2: Servicio de Auditoría
-**Objetivo:** Mitigación automatizada de riesgos para filtrar operaciones fraudulentas mediante análisis de metadatos y geoespacial.
-### A. Auditoría de Integridad del Dominio
-Verifica que el dominio tenga un historial suficiente y no sea un sitio temporal creado para estafas.
+### Fase II: Auditoría de Dominios y Seguridad
 
+Para mitigar el riesgo de sitios de "mercado gris" o de suplantación de identidad (phishing) dirigidos a compradores mayoristas, se aplicó una capa de filtrado secundaria:
 
-```python
-import whois
-from datetime import datetime
+- **Análisis de API Whois:** Se auditaron los dominios para verificar la longevidad de su registro. Los dominios establecidos recientemente (que a menudo indican sitios de estafa temporales) fueron descartados del conjunto de datos.
+- **Catalogación de Pasarelas de Pago:** Se realizó una simulación del recorrido del usuario hasta el carrito para cada candidato. Los sitios fueron clasificados inmediatamente como *Estafa/Alto Riesgo* y excluidos si los métodos de pago disponibles se limitaban a:
+  - Criptomonedas (Irreversibles)
+  - CashApp / Zelle / Transferencias bancarias
+  - Cuentas de transferencias entre pares (P2P) no comerciales
 
-def check_domain_trust(domain):
-    try:
-        w = whois.whois(domain)
-        creation_date = w.creation_date[0] if isinstance(w.creation_date, list) else w.creation_date
-        age_days = (datetime.now() - creation_date).days
-        return age_days > 365 # Umbral: 1 año
-    except:
-        return False
+## Hallazgos: Canales de Adquisición Verificados
 
-```
+Los siguientes canales superaron con éxito la auditoría de seguridad y proporcionan puntos de entrada oficiales B2B/Mayoristas para minoristas de boutiques legítimos.
 
-### B. Auditoría Geoespacial de Almacenes
-Utiliza la API de Google Maps para confirmar que la dirección del proveedor corresponde a una zona industrial/comercial y no a una residencia u oficina virtual.
-```python
-import googlemaps
+| Marca       | Nombre del Programa              | URL de Acceso Principal                                        |
+|-------------|----------------------------------|----------------------------------------------------------------|
+| Lululemon   | Ventas Estratégicas              | [shop.lululemon.com/about/strategic-sales](https://shop.lululemon.com/about/strategic-sales) |
+| Vuori       | Distribuidor Autorizado          | [help.vuoriclothing.com/en_us/wholesaler](https://help.vuoriclothing.com/en_us/wholesaler) |
+| Ryderwear   | Portal Mayorista                 | [wholesale.ryderwear.com](https://wholesale.ryderwear.com)     |
+| Pangaia     | Mercancía Corporativa Responsable| [pangaia.com/responsible-merchandise](https://pangaia.com/responsible-merchandise) |
 
-gmaps = googlemaps.Client(key='YOUR_API_KEY')
+## Marcas No Viables
 
-def verify_warehouse_location(address):
-    res = gmaps.geocode(address)
-    if res:
-        location_type = res[0]['types']
-        red_flags = ['residential', 'subpremise', 'postal_code']
-        return not any(flag in location_type for flag in red_flags)
-    return False
+Durante la auditoría, las siguientes marcas fueron señaladas por tener una infraestructura B2B en línea insignificante o inexistente para boutiques independientes:
 
-```
-## 5. Fase 3: Servicio de Procedencia (Monitoreo de Cadena de Suministro)
-**Objetivo:** Confirmar que el vendedor es un consignatario documentado de las marcas objetivo a través de datos aduaneros.
-**Enfoque Técnico:**
- * **Fuente de Datos:** Integración con APIs de inteligencia comercial (ej. Panjiva, ImportYeti o Vizion).
- * **Lógica de Validación:** Comparar el "Consignatario" (vendedor) con el "fabricante" (ej. Lululemon Athletica Canada) para encontrar registros de BLs coincidentes en los últimos 12 a 24 meses.
-```python
-def verify_provenance(company_name, target_brand):
-    # Simulación de API call
-    api_url = f"https://api.trademonitor.com/v1/shipments?consignee={company_name}"
-    response = requests.get(api_url, auth=('user', 'pass'))
-    shipments = response.json().get('data', [])
-    
-    matches = [s for s in shipments if target_brand.lower() in str(s).lower()]
-    return len(matches) > 0, {"match_count": len(matches)}
+- **Alo Yoga:** Los resultados estaban altamente saturados por lotes de liquidación de terceros y revendedores no autorizados; no se identificó un portal B2B directo y verificado para boutiques de pequeña a mediana escala.
+- **Spanx:** El perfil actual de SERP carece de una aplicación B2B de autoservicio dedicada para la expansión de tiendas físicas independientes.
 
-```
-## 6. Fase 4: Normalización (Esquema de Entrega)
-**Objetivo:** Generar el objeto final para el analísis de Viabilidad Financiera.
-**Ejemplo de ayload JSON:**
-```json
-{
-  "lead_metadata": {
-    "brand": "Vuori",
-    "vendor": "Empresa Pulenta LLC",
-    "source_url": "https://sitiodepalletsoropadelujo.com/vuori-lot-99"
-  },
-  "trust_score": {
-    "domain_age_days": 840,
-    "location_verified": true,
-    "location_class": "Industrial Warehouse",
-    "is_scam_likely": false
-  },
-  "supply_chain_verification": {
-    "provenance_status": "VERIFIED",
-    "last_shipment_date": "2026-02-10",
-    "verified_shipper": "VUORI INC / ASIA LOGISTICS",
-    "annual_volume_kg": 12500
-  },
-  "analysis_ready": true
-}
+## Conclusión
 
-```
-
+Para las boutiques que buscan expandir su catálogo de ropa de alto rendimiento, **Vuori** y **Ryderwear** ofrecen las infraestructuras mayoristas digitales más optimizadas y listas para aplicar. **Lululemon** se mantiene como un socio estratégico altamente selectivo, mientras que **Pangaia** se enfoca en colaboraciones B2B alineadas con su misión. Se recomienda evitar cualquier oferta de "lotes" de terceros descubierta durante las búsquedas iniciales, ya que estas fallaron consistentemente el protocolo de seguridad de la Fase II.
