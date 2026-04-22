@@ -21,7 +21,7 @@ Para mitigar el riesgo de sitios de "mercado gris" o de suplantación de identid
   - CashApp / Zelle / Transferencias bancarias
   - Cuentas de transferencias entre pares (P2P) no comerciales
 
-## Hallazgos: Canales de Adquisición Verificados
+## Hallazgos
 
 Los siguientes canales superaron con éxito la auditoría de seguridad y proporcionan puntos de entrada oficiales B2B/Mayoristas para minoristas de boutiques legítimos.
 
@@ -36,7 +36,7 @@ Los siguientes canales superaron con éxito la auditoría de seguridad y proporc
 
 Durante la auditoría, las siguientes marcas fueron señaladas por tener una infraestructura B2B en línea insignificante o inexistente para boutiques independientes:
 
-- **Alo Yoga:** Los resultados estaban altamente saturados por lotes de liquidación de terceros y revendedores no autorizados; no se identificó un portal B2B directo y verificado para boutiques de pequeña a mediana escala.
+- **Alo Yoga:** Los resultados estaban altamente saturados por lotes de liquidación de terceros y revendedores no autorizados; no se identificó un portal B2B directo y verificado.
 - **Spanx:** El perfil actual de SERP carece de una aplicación B2B de autoservicio dedicada para la expansión de tiendas físicas independientes.
 
 ## Conclusión
