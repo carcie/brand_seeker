@@ -28,7 +28,7 @@ Los siguientes canales superaron con éxito la auditoría de seguridad y proporc
 | Marca       | Nombre del Programa              | URL de Acceso Principal                                        |
 |-------------|----------------------------------|----------------------------------------------------------------|
 | Lululemon   | Ventas Estratégicas              | [shop.lululemon.com/about/strategic-sales](https://shop.lululemon.com/about/strategic-sales) |
-| Vuori       | Distribuidor Autorizado          | [help.vuoriclothing.com/en_us/wholesaler](https://help.vuoriclothing.com/en_us/wholesaler) |
+| Vuori       | Distribuidor Autorizado          | [https://help.vuoriclothing.com/en_us/how-do-i-become-a-wholesaler-Sy0x0jjLw](https://help.vuoriclothing.com/en_us/wholesaler) |
 | Ryderwear   | Portal Mayorista                 | [wholesale.ryderwear.com](https://wholesale.ryderwear.com)     |
 | Pangaia     | Mercancía Corporativa Responsable| [pangaia.com/responsible-merchandise](https://pangaia.com/responsible-merchandise) |
 
