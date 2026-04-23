@@ -23,7 +23,7 @@ Para mitigar el riesgo de sitios de "mercado gris" o de suplantación de identid
 
 ## Hallazgos
 
-Los siguientes canales superaron con éxito la auditoría de seguridad y proporcionan puntos de entrada oficiales B2B/Mayoristas para minoristas de boutiques legítimos.
+Los siguientes canales superaron con éxito la auditoría de seguridad y proporcionan puntos de entrada oficiales B2B/Mayoristas para minoristas.
 
 | Marca       | Nombre del Programa              | URL de Acceso Principal                                        |
 |-------------|----------------------------------|----------------------------------------------------------------|
